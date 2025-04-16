@@ -1,0 +1,231 @@
+#include <stdio.h>
+#include <string.h>
+
+int main();
+
+struct books {
+    int bid, bookavail, bookprice;
+    char bookname[100];
+} book[100];
+
+struct student {
+    char sname[100], spass[100];
+    int sid, rbook;
+} stud[100];
+
+int bookid = 101, bookcount = 1, studid = 201, scount = 1;
+
+void issuebook() {
+    int i, found;
+    printf("\n");
+    for (i = 1; i < bookcount; i++) {
+        printf("Book name : %-10s\t", book[i].bookname);
+        printf("Book Id : %-10d\t", book[i].bid);
+        printf("Prize : %-10d\t", book[i].bookprice);
+        if (book[i].bookavail == 1) {
+            printf("Available\n");
+        } else {
+    
+            found = 0;
+            for (int j = 0; j < scount; j++) {
+                if (stud[j].rbook == book[i].bid) {
+                    
+                    printf("Not Available - Lent to Student ID: %d\n", stud[j].sid);
+                    printf("Student Name: %s\n", stud[j].sname);
+                    found = 1;
+                    break;
+                }
+            }
+            if (!found) {
+                printf("Not Available\n");
+            }
+        }
+        printf("\n");
+    }
+}
+
+void admin() {
+    int i;
+    char a[100], b[100];
+    printf("------Admin login------\n");
+    printf("Enter user name: ");
+    scanf("%s", a);
+    printf("Enter password: ");
+    scanf("%s", b);
+
+    if (strcmp(a, "sehwaag") == 0 && strcmp(b, "2004") == 0) {
+        while (1) {
+            int adchoice;
+            printf("Welcome Admin ");
+            printf("\n1.Add Books\n2.Issue books\n3.Save report\n4.View Books\n5.Logout\nEnter your choice: ");
+            scanf("%d", &adchoice);
+            if (adchoice == 1) {
+                int nbooks;
+                FILE *fp;
+                printf("\nHow many books?");
+                scanf("%d", &nbooks);
+                for (i = 1; i <= nbooks; i++) {
+                    printf("\nEnter book name: ");
+                    scanf("%s", book[i].bookname);
+                    printf("\nEnter book price: ");
+                    scanf("%d", &book[i].bookprice);
+                    book[bookcount].bookavail = 1;
+                    book[bookcount].bid = bookid++;
+                    printf("Your Book id is :%d\n", book[bookcount++].bid);
+                }
+                printf("\nBook added successfully\n");
+                fp = fopen("report.txt", "a");
+                for (i = 1; i <= nbooks; i++) {
+                    fprintf(fp, "\n%s\t", book[i].bookname);
+                    fprintf(fp, "%d\t", book[i].bookprice);
+                }
+                fclose(fp);
+            }
+            if (adchoice == 2) {
+                issuebook();
+            }
+            if (adchoice == 3) {
+                printf("\nFile saved Successfully...\n");
+            }
+            if (adchoice == 4) {
+                for (i = 1; i < bookcount; i++) {
+                    printf("Book name: %s\n", book[i].bookname);
+                    printf("Book price: %d\n", book[i].bookprice);
+                    if (book[i].bookavail == 0) {
+                        int borrowed_by = -1;
+                        for (int j = 0; j < scount; j++) {
+                            if (stud[j].rbook == book[i].bid) {
+                                borrowed_by = stud[j].sid;
+                                break;
+                            }
+                        }
+                        if (borrowed_by != -1) {
+                            printf("Book lent to Student ID: %d\n", borrowed_by);
+                        }
+                    }
+                }
+            }
+            else if (adchoice == 5) {
+                printf("\nLogged out admin successfully \n");
+                main();
+            }
+        }
+    } else {
+        printf("Invalid choice...\n");
+    }
+}
+
+void student() {
+    int stchoice, a, e;
+    char b[100];
+    while (1) {
+        printf("Welcome Student\n");
+        printf("\n1.Sign in\n2.Register\n3.Logout\nEnter your choice: ");
+        scanf("%d", &stchoice);
+
+        if (stchoice == 1) {
+            int i;
+            printf("Login As Student \n");
+            printf("Enter student id: \n");
+            scanf("%d", &a);
+            printf("Enter password: \n");
+            scanf("%s", b);
+
+            if (stud[a - 200].sid == a && strcmp(b, stud[a - 200].spass) == 0) {
+                printf("Welcome Student \n");
+                while (1) {
+                    int s;
+                    printf("1.View books\n2.Search book\n3.Lend book\n4.Return book\n5.Back\nEnter your choice: ");
+                    scanf("%d", &s);
+                    if (s == 1) {
+                        issuebook();
+                    }
+                    else if (s == 2) {
+                        char e[100];
+                        int f;
+                        printf("Enter Book name: ");
+                        scanf("%s", e);
+                        printf("Enter Book id: ");
+                        scanf("%d", &f);
+                        if (stud[a - 200].rbook == 0 && book[f - 100].bookavail == 1) {
+                            printf("Book is available..\n");
+                        } else {
+                            printf("Not available...\n");
+                        }
+                    }
+                    else if (s == 3) {
+                        char d[100];
+                        int c;
+                        printf("Enter Book name: ");
+                        scanf("%s", d);
+                        printf("Enter Book id: ");
+                        scanf("%d", &c);
+                        if (stud[a - 200].rbook == 0 && book[c - 100].bookavail == 1) {
+                            stud[a - 200].rbook = book[c - 100].bid; 
+                            book[c - 100].bookavail = 0; 
+                            printf("%s Lend Successfully...\n", book[c - 100].bookname);
+                        }
+                        else if (stud[a - 200].rbook != 0) {
+                            printf("You have already lent a book...\n");
+                        } else {
+                            printf("Book not Available...\n");
+                        }
+                    }
+                    else if (s == 4) {
+                        e = stud[a - 200].rbook;
+                        if (stud[a - 200].rbook != 0 && book[e - 100].bookavail == 0) {
+                            printf("Book name : %8s\n", book[e - 100].bookname);
+                            book[e - 100].bookavail = 1; 
+                            stud[a - 200].rbook = 0;
+                            printf("Return Successfully..\n");
+                        } else {
+                            printf("You did not get the book...\n");
+                        }
+                    }
+                    else if (s == 5) {
+                        break;
+                    } else {
+                        printf("Invalid choice...\n");
+                    }
+                }
+            } else {
+                printf("Wrong user id or password..\n");
+            }
+        }
+        else if (stchoice == 2) {
+            printf("Enter student name: ");
+            scanf("%s", stud[scount].sname);
+            printf("Enter Password: ");
+            scanf("%s", stud[scount].spass);
+            stud[scount].sid = studid++;
+            printf("Your student Id is :%d\n", stud[scount].sid);
+            stud[scount++].rbook = 0; 
+            printf("\nRegistered successfully\n");
+        }
+        else if (stchoice == 3) {
+            main();
+        } else {
+            printf("Invalid choice...\n");
+        }
+    }
+}
+
+int main() {
+    int i, n;
+    printf("------------Library Management System------------");
+    printf("\n1.Admin\n2.Student\n3.Exit\nEnter your choice: ");
+    scanf("%d", &n);
+    while (1) {
+        if (n == 1) {
+            admin();
+        }
+        else if (n == 2) {
+            student();
+        }
+        else {
+            break;
+        }
+    }
+
+    return 0;
+}
